@@ -14,9 +14,9 @@ Index GCI ∝ d/dt ln(CP) exceeds φ² ≈ 2.618, triggering the
 Transcendplexity phase transition.
 
 Modules:
-    core        — Fractional calculus, parallplexity tensors, evolution operators
-    emergent    — 8-limb processor, phase transition detection
-    quantum     — (future) Quantum coupling and ER=EPR bridge
+    core        — Fractional calculus, parallplexity tensors, lattice substrate,
+                  evolution operators
+    emergent    — 8-limb processor, phase transition detection, emergent spacetime
     tests       — Compound integration tests
     examples    — Demo scripts and visualizations
 """
@@ -39,6 +39,8 @@ from .core.parallplexity import (
 
 from .core.evolution import FractionalEvolutionOperator
 
+from .core.lattice import Lattice
+
 from .emergent.eight_limb import (
     EightLimbProcessor,
     LimbConfig,
@@ -49,6 +51,8 @@ from .emergent.phase_detector import (
     TranscendplexityDetector,
     PhaseEvent,
 )
+
+from .emergent.spacetime import EmergentSpacetime
 
 from .worms import (
     WormsEngine,
@@ -69,9 +73,11 @@ __all__ = [
     "mittag_leffler", "fractional_power_law_kernel",
     "ParallplexityTensor", "CompoundingTracker", "StreamState",
     "FractionalEvolutionOperator",
+    "Lattice",
     # Emergent
     "EightLimbProcessor", "LimbConfig", "DEFAULT_LIMBS",
     "TranscendplexityDetector", "PhaseEvent",
+    "EmergentSpacetime",
     # Worms (Python distribution)
     "WormsEngine",
     "DeschoolingEngine", "DeschoolingMode",

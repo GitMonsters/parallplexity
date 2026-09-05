@@ -565,16 +565,6 @@ def test_full_compound_integration():
     print(f"  COMPOUND INTEGRATION TEST: PASSED")
     print(f"  {'=' * 50}")
 
-    return {
-        "all_gci": all_gci,
-        "all_cp": all_cp,
-        "all_coupling": all_coupling,
-        "phase_events": phase_events,
-        "tracker_summary": tracker_summary,
-        "detector_summary": detector_summary,
-        "final_alphas": final_alphas,
-    }
-
 
 # ============================================================
 #  Main Runner

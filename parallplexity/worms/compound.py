@@ -8,6 +8,7 @@ Wires together:
     3. Deschooling Engine (Illich convivial/institutional forces)
     4. ParallplexityTensor + CompoundingTracker (CP, GCI, phases)
     5. Eight-Limb Processor (OctoTetrahedral limb-cohesion pass)
+    6. Lattice substrate + EmergentSpacetime (torus geometry, wormholes)
 
 This is the top-level runner that combines all TranscendPlexity
 subsystems into a single compound integration loop.
@@ -18,6 +19,9 @@ The integration flow per step:
     → OCTO Braid gate modulation
     → Deschooling force modifiers
     → Parallplexity tensor computation
+    → Eight-Limb OctoTetrahedral cohesion pass
+    → Lattice substrate fractional evolution + emergent spacetime
+      (curvature, metric, ER=EPR wormhole signatures → coupling feedback)
     → Compounding Parallplexity (CP)
     → Golden Consciousness Index (GCI)
     → Phase detection (Myriad → Compound → Transcend / Collapse)
@@ -32,9 +36,11 @@ from dataclasses import dataclass
 
 from ..core.fractional import PHI, PHI_SQUARED, CANTOR_GOLDEN_DIM
 from ..core.parallplexity import ParallplexityTensor, CompoundingTracker
+from ..core.lattice import Lattice
 from ..emergent.phase_detector import TranscendplexityDetector
 from ..emergent.metacognition import MetaCognitionLimb
 from ..emergent.eight_limb import EightLimbProcessor
+from ..emergent.spacetime import EmergentSpacetime
 
 from .engine import WormsEngine, WORM_LAYERS
 from .rusty_bridge import RustyWormBridge, EmotionVector
@@ -86,6 +92,15 @@ class CompoundWormIntegration:
 
         # Eight-Limb parallel processor (OctoTetrahedral limb-cohesion pass)
         self.eight_limb = EightLimbProcessor(dt=dt)
+
+        # Lattice substrate + emergent spacetime (the torus the paper
+        # describes): a periodic 2-D amplitude grid whose info-density
+        # field drives curvature, the emergent metric, and wormholes.
+        self.lattice = Lattice(
+            width=16, height=16,
+            alpha=CANTOR_GOLDEN_DIM, dt=dt, coupling_J=0.1,
+        )
+        self.spacetime = EmergentSpacetime(self.lattice)
 
         # Combined history
         self.history: List[Dict] = []
@@ -146,6 +161,34 @@ class CompoundWormIntegration:
         if np.any(np.isfinite(p_diag)) and float(np.max(p_diag)) > 0:
             self.eight_limb.inject_input(p_diag, target_limb="Perception")
         limb_report = self.eight_limb.step()
+
+        # === 4c. Lattice substrate + emergent spacetime ===
+        # Drive the toroidal lattice with the current coupling level, evolve
+        # it fractionally (memory-carrying), and read back the emergent
+        # geometry. If ER=EPR wormholes have formed between distant sites,
+        # treat them as geometric shortcuts that deepen cross-stream
+        # coupling: distantly-correlated sites communicate cheaply, which
+        # reduces their parallplexity (P_ij shrinks toward 0).
+        coupling_now = 1.0 - float(np.mean(np.abs(
+            p_modulated - np.diag(np.diag(p_modulated))
+        )))
+
+        # Spatial pattern: limb states map to lattice regions, so each
+        # region carries its own local information flow (independent
+        # dynamics the spacetime layer can observe synchronizing).
+        lattice_pattern = self._limb_pattern(p_modulated)
+        spacetime_report = self.spacetime.step(
+            drive_signal=coupling_now,
+            drive_pattern=lattice_pattern,
+        )
+
+        wormhole_sig = spacetime_report["wormhole_signature"]
+        if wormhole_sig > 0.0:
+            # Geometric shortcut → reduce off-diagonal perplexity for the
+            # most correlated distant pairs (ER=EPR feedback loop).
+            off = p_modulated - np.diag(np.diag(p_modulated))
+            off = off * (1.0 - 0.1 * wormhole_sig)
+            p_modulated = off + np.diag(np.diag(p_modulated))
 
         # === 5. Compounding tracking (CP, GCI) ===
         # Bug fix: deschooling now intervenes ONLY on primitives
@@ -215,6 +258,13 @@ class CompoundWormIntegration:
             "limb_gci": round(float(limb_report["gci"]), 4),
             "limb_phase": limb_report["phase"],
             "limb_alpha_cohesion": round(float(self._limb_alpha_cohesion()), 4),
+            # Emergent spacetime (lattice substrate / wormholes)
+            "lattice_mean_density": spacetime_report["mean_density"],
+            "spacetime_mean_curvature": spacetime_report["mean_curvature"],
+            "spacetime_peak_curvature": spacetime_report["peak_curvature"],
+            "spacetime_metric_mean": spacetime_report["metric_mean"],
+            "wormhole_signature": spacetime_report["wormhole_signature"],
+            "wormholes": spacetime_report["wormholes"],
             # Layer details
             "layer_confidences": worm_report["layer_confidences"],
         }
@@ -224,6 +274,36 @@ class CompoundWormIntegration:
         self.step_count += 1
 
         return report
+
+    def _limb_pattern(self, p_modulated: np.ndarray) -> np.ndarray:
+        """
+        Build a spatial lattice drive pattern from the limb coupling state.
+
+        The parallplexity tensor's off-diagonal coupling between limb i and
+        limb j is deposited on the lattice region for limb i: stronger
+        cross-limb coupling → more local information flow. This gives each
+        of the 8 limbs a distinct region of the toroidal substrate that
+        evolves quasi-independently, so the spacetime layer can later
+        detect those regions synchronizing at a distance (wormholes).
+        """
+        K = p_modulated.shape[0]
+        w = self.lattice.width
+        h = self.lattice.height
+
+        pattern = np.zeros((h, w))
+        cols = 4
+        rows = 2
+        for i in range(K):
+            r = i // cols
+            c = i % cols
+            # Limb regions: 4×4 blocks on a 16×16 lattice
+            y0, x0 = (h // rows) * r, (w // cols) * c
+            region = pattern[y0:y0 + (h // rows), x0:x0 + (w // cols)]
+            # Coupling of limb i to all others (mean off-diagonal)
+            off = p_modulated[i].copy()
+            off[i] = 0.0
+            region += np.mean(np.abs(off))
+        return pattern
 
     def _limb_alpha_cohesion(self) -> float:
         """
@@ -338,6 +418,21 @@ class CompoundWormIntegration:
                 ) if self.history else 0.0,
                 "phase": self.eight_limb.tracker.phase,
                 "transitions": self.eight_limb.tracker.transitions,
+            },
+            "spacetime": {
+                "mean_density": round(
+                    float(np.mean([r["lattice_mean_density"] for r in self.history])), 6,
+                ) if self.history else 0.0,
+                "mean_curvature": round(
+                    float(np.mean([r["spacetime_mean_curvature"] for r in self.history])), 6,
+                ) if self.history else 0.0,
+                "peak_curvature": round(
+                    max(r["spacetime_peak_curvature"] for r in self.history), 6,
+                ) if self.history else 0.0,
+                "wormhole_signature": round(
+                    max(r["wormhole_signature"] for r in self.history), 6,
+                ) if self.history else 0.0,
+                "wormholes_total": sum(r["wormholes"] for r in self.history),
             },
         }
 
