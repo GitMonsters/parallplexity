@@ -17,6 +17,7 @@ Limb fractional orders from the paper:
 """
 
 import numpy as np
+import copy
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 
@@ -68,6 +69,11 @@ class EightLimbProcessor:
         self.dt = dt
         self.t = 0.0
         self.step_count = 0
+
+        # Copy the module defaults: _metacognition_adapt mutates limb config
+        # alphas in place, so sharing DEFAULT_LIMBS LimbConfigs across
+        # instances let one run retune the defaults for all later runs.
+        configs = [copy.deepcopy(c) for c in configs]
         
         # Initialize limbs
         self.limbs: List[Dict] = []

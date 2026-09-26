@@ -303,6 +303,19 @@ def test_fractional_evolution():
 #  Test 6: Phase Transition Detector
 # ============================================================
 
+def test_seeded_determinism():
+    """Full compound run is reproducible given the same (seed, np seed)."""
+    import json
+    from parallplexity.worms.compound import CompoundWormIntegration
+
+    def run(seed):
+        np.random.seed(seed)
+        r = CompoundWormIntegration(seed=seed).run(steps=60, verbose=False)
+        return json.dumps(r, default=str, sort_keys=True)
+
+    assert run(42) == run(42)
+
+
 def test_phase_detector():
     """Test the TranscendplexityDetector with synthetic phase trajectory."""
     print("\n=== Test 6: Phase Transition Detector ===")

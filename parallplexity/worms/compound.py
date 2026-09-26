@@ -64,6 +64,13 @@ class CompoundWormIntegration:
             deschooling_intensity=0.7,
         )
         summary = cwi.run(steps=500, verbose=True)
+
+    Reproducibility:
+        Pass `seed=` so the lattice substrate (the only OS-entropy source)
+        is initialized deterministically; combine with `np.random.seed(s)` to
+        pin the bridge/worms/limb dynamics too:
+            np.random.seed(42)
+            cwi = CompoundWormIntegration(seed=42)
     """
 
     def __init__(
@@ -72,6 +79,7 @@ class CompoundWormIntegration:
         deschooling_mode: DeschoolingMode = DeschoolingMode.BASELINE,
         deschooling_intensity: float = 0.5,
         use_native_rust: bool = False,
+        seed: Optional[int] = None,
     ):
         self.dt = dt
 
@@ -99,6 +107,7 @@ class CompoundWormIntegration:
         self.lattice = Lattice(
             width=16, height=16,
             alpha=CANTOR_GOLDEN_DIM, dt=dt, coupling_J=0.1,
+            seed=seed,
         )
         self.spacetime = EmergentSpacetime(self.lattice)
 

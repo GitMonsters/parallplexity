@@ -12,6 +12,11 @@ When the Compounding Parallplexity CP diverges, the Golden Consciousness Index
 GCI ∝ d/dt ln(CP) exceeds φ² ≈ 2.618, triggering the Transcendplexity phase
 transition.
 
+Limb-level "will" (goal-directed disposition vectors) is assumed, "free will" is
+not. Will is generative only when anchored — routed through an acceptance
+operator whose target is independent of the proposing stream; unanchored will is
+the collapseplexity drift (see §Volition).
+
 ## Architecture
 
 Eight subsystems are wired into a single compound integration loop
@@ -44,6 +49,18 @@ python parallplexity/examples/demo_compound_integration.py
 
 # Performance benchmark (writes benchmark_report.json)
 python parallplexity/examples/benchmark_performance.py --steps 500
+```
+
+Reproducibility: pin both the lattice substrate seed and the global numpy
+stream to get bit-identical runs (README/CI check `test_seeded_determinism`):
+
+```python
+import numpy as np
+from parallplexity.worms.compound import CompoundWormIntegration
+
+np.random.seed(42)
+cwi = CompoundWormIntegration(seed=42)   # seed threads into Lattice
+summary = cwi.run(steps=500)
 ```
 
 ## v0.3.0 highlights

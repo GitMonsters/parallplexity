@@ -18,6 +18,7 @@ fractional order α that controls its memory depth.
 """
 
 import numpy as np
+import copy
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
@@ -259,6 +260,13 @@ class WormsEngine:
     ):
         configs = layer_configs if layer_configs is not None else WORM_LAYERS
         bridges = bridge_configs if bridge_configs is not None else WORM_BRIDGES
+
+        # Copy the module defaults: the layer alpha governor (update_alphas)
+        # mutates config in place, so sharing module-level LayerConfigs across
+        # instances let one run permanently retune the defaults for all later
+        # runs (and broke run-to-run reproducibility).
+        configs = [copy.deepcopy(c) for c in configs]
+        bridges = [copy.deepcopy(b) for b in bridges]
 
         self.dt = dt
         self.t = 0.0
